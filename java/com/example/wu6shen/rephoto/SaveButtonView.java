@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
+import android.support.v7.widget.AppCompatButton;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Button;
@@ -13,7 +14,7 @@ import android.widget.Button;
  * Created by wu6shen on 17-6-10.
  */
 
-public class SaveButtonView extends Button {
+public class SaveButtonView extends AppCompatButton {
 
     private int mViewWidth;
     private int mViewHeight;

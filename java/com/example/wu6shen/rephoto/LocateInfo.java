@@ -22,10 +22,10 @@ public class LocateInfo {
         frame[2] = new Point(center.x + width / 2 * scale, center.y + height / 2 * scale);
         frame[3] = new Point(center.x - width / 2 * scale, center.y + height / 2 * scale);
 
-        cross[0] = new Point(center.x - width / 4 * scale, center.y);
-        cross[1] = new Point(center.x + width / 4 * scale, center.y);
-        cross[2] = new Point(center.x, center.y - height / 4 * scale);
-        cross[3] = new Point(center.x, center.y + height / 4 * scale);
+        cross[0] = new Point(center.x - height / 6 * scale, center.y);
+        cross[1] = new Point(center.x + height / 6 * scale, center.y);
+        cross[2] = new Point(center.x, center.y - height / 6 * scale);
+        cross[3] = new Point(center.x, center.y + height / 6 * scale);
     }
 
     LocateInfo(LocateInfo origin, Mat homography, double scale) {
@@ -69,18 +69,18 @@ public class LocateInfo {
         double[] errors = new double[6];
 
         /**case0 仰俯*/
-        errors[0] = (frame[2].y - frame[3].y) - (frame[1].y - frame[0].y);
+        errors[0] = (frame[2].x - frame[3].x) - (frame[1].x - frame[0].x);
         errors[0] /= 2;
         //Log.i("INFOGET", "Case 0:" + errors[0]);
         if (errors[0] > MyUtility.THRES) {
             //info[0] = "Rot D";
-            info[0] = "向左转";
+            info[0] = "向上转";
             //info[0] = 1;
             /**1*/
         } else if (errors[0] < -MyUtility.THRES) {
             errors[0] = -errors[0];
             //info[0] = "Rot U";
-            info[0] = "向右转";
+            info[0] = "向下转";
             //info[0] = -1;
             /**-1*/
         } else {
@@ -91,18 +91,18 @@ public class LocateInfo {
         }
 
         /**case1 左右转*/
-        errors[1] = (frame[2].x - frame[1].x) - (frame[3].x - frame[0].x);
+        errors[1] = (frame[2].y - frame[1].y) - (frame[3].y - frame[0].y);
         errors[1] /= 2;
         //Log.i("INFOGET", "Case 1:" + errors[1]);
         if (errors[1] > MyUtility.THRES) {
             //info[1] = "Rot L";
-            info[1] = "向上转";
+            info[1] = "向左转";
             //info[1] = 1;
             /**1*/
         } else if (errors[1] < -MyUtility.THRES) {
             errors[1] = -errors[1];
             //info[1] = "Rot R";
-            info[1] = "向下转";
+            info[1] = "向右转";
             //info[1] = -1;
             /**-1*/
         } else {
@@ -113,17 +113,17 @@ public class LocateInfo {
         }
 
         /**case2 左右摆*/
-        errors[2] = cross[2].x - cross[3].x;
+        errors[2] = cross[1].y - cross[0].y;
         //Log.i("INFOGET", "Case 2:" + errors[2]);
         if (errors[2] > MyUtility.THRES) {
             //info[2] = "Rot CCW";
-            info[2] = "向右转";
+            info[2] = "向左摆";
             //info[2] = 1;
             /**1*/
         } else if (errors[2] < -MyUtility.THRES) {
             errors[2] = -errors[2];
             //info[2] = "Rot CW ";
-            info[2] = "向左转";
+            info[2] = "向右摆";
             //info[2] = -1;
             /**-1*/
         } else {

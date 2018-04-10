@@ -1,6 +1,7 @@
 
+
 /**
- * Created by wu6shen on 17-6-10.
+ * Created by wu6shen on 18-4-4.
  */
 package com.example.wu6shen.rephoto;
 
@@ -14,7 +15,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Button;
 
-public class CloseButtonView extends AppCompatButton {
+public class OpenButtonView extends AppCompatButton {
 
     private int mViewWidth;
     private int mViewHeight;
@@ -29,17 +30,17 @@ public class CloseButtonView extends AppCompatButton {
     private Paint mCirclePaint;
     private Paint mSymbolPaint;
 
-    public CloseButtonView(Context context) {
+    public OpenButtonView(Context context) {
         super(context);
         init();
     }
 
-    public CloseButtonView(Context context, AttributeSet attrs) {
+    public OpenButtonView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public CloseButtonView(Context context, AttributeSet attrs, int defStyle) {
+    public OpenButtonView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init();
     }
@@ -81,10 +82,10 @@ public class CloseButtonView extends AppCompatButton {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         if (mViewWidth != 0) {
-            mPoint1 = new PointF(mRadius / 2, mRadius / 2);
-            mPoint2 = new PointF(mRadius / 2 * 3, mRadius / 2 * 3);
-            mPoint3 = new PointF(mRadius / 2 * 3, mRadius / 2);
-            mPoint4 = new PointF(mRadius / 2, mRadius / 2 * 3);
+            mPoint1 = new PointF(mRadius / 2, mRadius);
+            mPoint2 = new PointF(mRadius / 2 * 3, mRadius);
+            mPoint3 = new PointF(mRadius, mRadius / 2);
+            mPoint4 = new PointF(mRadius, mRadius / 2 * 3);
         }
     }
 
@@ -113,4 +114,3 @@ public class CloseButtonView extends AppCompatButton {
         return result;
     }
 }
-

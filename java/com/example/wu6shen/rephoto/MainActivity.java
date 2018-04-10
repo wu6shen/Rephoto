@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
     /**计算图片大小192 * 180*/
     private static double scaleCalImage = 0.25;
     /**框占图片大小*/
-    private static double scaleFrameSize = 2.0 / 3;
+    private static double scaleFrameSize = 3.0 / 5;
 
 
     private MediaRecorder mRecorder;//音视频录制类
@@ -113,8 +113,10 @@ public class MainActivity extends AppCompatActivity {
     private String textInfo;
     private String imageName;
     private TextView textInfoView;
+    private TextView textSaveView;
 
     private Button takePhotoButton;
+    private Button openButton;
     private Button okButton;
     private Button clearButton;
 
@@ -145,6 +147,13 @@ public class MainActivity extends AppCompatActivity {
         textInfoView.setText(textInfo);
         textInfoView.setTextColor(Color.RED);
 
+        textSaveView = (TextView) findViewById(R.id.saveText);
+        textSaveView.setVisibility(View.INVISIBLE);
+        textSaveView.setText("是否保存");
+        textSaveView.setTextSize(20);
+        textSaveView.setBackgroundResource(R.drawable.text_view_border);
+        textSaveView.setTextColor(Color.WHITE);
+
         textImageView = (TextView) findViewById(R.id.image);
         textImageView.setVisibility(View.INVISIBLE);
 
@@ -157,18 +166,36 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        openButton = (Button) findViewById(R.id.openButton);
+        openButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (photosOk == -2) {
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    intent.setType("image/*");
+                    startActivityForResult(intent, 100);
+                }
+            }
+        });
+
+
         okButton = (Button) findViewById(R.id.testButton);
         okButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 /**
                  */
-                if (photosOk == -2) {
-                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                    intent.setType("image/*");
-                    startActivityForResult(intent, 100);
-                }
-                if (photosOk == 3) {
+                if (photosOk == -1) {
+                            textSaveView.setVisibility(View.GONE);
+                            //Toast.makeText(MainActivity.this, "The name is : " + edit.getText().toString(), Toast.LENGTH_SHORT).show();
+                            MyUtility.saveImageToGallery(getApplicationContext(), originBitmap, "rephoto", System.currentTimeMillis() + "-ori.jpg");
+                            imageName = System.currentTimeMillis() + "";
+                            initTrack(src1.getNativeObjAddr());
+                            photosOk = 0;
+                            takePhotoButton.setVisibility(View.VISIBLE);
+
+                } else if (photosOk == -2) {
+                } else if (photosOk == 3) {
                     photosOk = 4;
                     takePhotoButton.setVisibility(View.INVISIBLE);
                     //okButton.setText("SAVE");
@@ -197,10 +224,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        okButton.setVisibility(View.GONE);
 
         /**clear*/
         clearButton = (Button) findViewById(R.id.close_button);
-        clearButton.setVisibility(View.INVISIBLE);
+        clearButton.setVisibility(View.GONE);
         clearButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -218,13 +246,23 @@ public class MainActivity extends AppCompatActivity {
 
                 drawView.getCanvas();
                 drawView.clearDraw();
+                drawView.drawBack(0.f, (float)previewSize.height / 5 * 4, (float)previewSize.width, (float)previewSize.height);
                 switch (photosOk) {
                     case -2:
                         break;
+                    case -1:
+                        photosOk = -2;
+                        takePhotoButton.setVisibility(View.VISIBLE);
+                        clearButton.setVisibility(View.GONE);
+                        okButton.setVisibility(View.GONE);
+                        openButton.setVisibility(View.VISIBLE);
+                        textSaveView.setVisibility(View.INVISIBLE);
+                        break;
                     case 0:
                         photosOk = -2;
-                        clearButton.setVisibility(View.INVISIBLE);
-                        okButton.setVisibility(View.VISIBLE);
+                        clearButton.setVisibility(View.GONE);
+                        okButton.setVisibility(View.GONE);
+                        openButton.setVisibility(View.VISIBLE);
                         textInfoView.setVisibility(View.INVISIBLE);
                         break;
                     case 4:
@@ -257,9 +295,29 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        hideNavigationBar();
         builder = new AlertDialog.Builder(this);
     }
+    public void hideNavigationBar() {
+        int uiFlags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                | View.SYSTEM_UI_FLAG_FULLSCREEN; // hide status bar
 
+        if (android.os.Build.VERSION.SDK_INT >= 19) {
+            uiFlags |= View.SYSTEM_UI_FLAG_IMMERSIVE;//0x00001000; // SYSTEM_UI_FLAG_IMMERSIVE_STICKY: hide
+        } else {
+            uiFlags |= View.SYSTEM_UI_FLAG_LOW_PROFILE;
+        }
+
+        try {
+            getWindow().getDecorView().setSystemUiVisibility(uiFlags);
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+
+    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK && requestCode == 100) {
@@ -279,7 +337,8 @@ public class MainActivity extends AppCompatActivity {
                     Utils.bitmapToMat(scaleBitmap(originBitmap, (float) scaleCalImage, (float) scaleCalImage), src1);
                     initTrack(src1.getNativeObjAddr());
                     photosOk = 0;
-                    okButton.setVisibility(View.INVISIBLE);
+                    okButton.setVisibility(View.GONE);
+                    openButton.setVisibility(View.GONE);
                     clearButton.setVisibility(View.VISIBLE);
                     startCameraPreview();
                 } catch (FileNotFoundException e) {
@@ -358,7 +417,9 @@ public class MainActivity extends AppCompatActivity {
                 clearTracker();
                 nowBitmap = bestBitmap;
                 okButton.setVisibility(View.VISIBLE);
+                clearButton.setVisibility(View.VISIBLE);
                 takePhotoButton.setVisibility(View.INVISIBLE);
+                takePhotoButton.setBackgroundResource(R.drawable.snap_button);
                 //bestBitmap = bitmap;
                 textInfoView.setVisibility(View.INVISIBLE);
                 //takePhotoButton.setVisibility(View.INVISIBLE);
@@ -379,6 +440,7 @@ public class MainActivity extends AppCompatActivity {
                         photosOk = 1;
                         textInfoView.setVisibility(View.VISIBLE);
                         okButton.setVisibility(View.INVISIBLE);
+                        clearButton.setVisibility(View.GONE);
                         takePhotoButton.setVisibility(View.INVISIBLE);
                         stopScore += 0.5;
                     }
@@ -417,41 +479,16 @@ public class MainActivity extends AppCompatActivity {
                         originBitmap = bitmap;
                         lookBitmap = scaleBitmap(bitmap, (float)(scaleCalImage * 1.3), (float)(scaleCalImage * 1.3));
                         Utils.bitmapToMat(scaleBitmap(bitmap, (float)scaleCalImage, (float)scaleCalImage), src1);
-                        initTrack(src1.getNativeObjAddr());
-                        photosOk = 0;
-                        Log.i("zoom", mCamera.getParameters().getFocalLength() + "-----");
-                        okButton.setVisibility(View.INVISIBLE);
+                        photosOk = -1;
+                        okButton.setVisibility(View.VISIBLE);
+                        openButton.setVisibility(View.GONE);
                         clearButton.setVisibility(View.VISIBLE);
-                        AlertDialog.Builder alertbBuilder=new AlertDialog.Builder(MainActivity.this);
-                        alertbBuilder.setTitle("Please input name:");
-                        final EditText edit = new EditText(MainActivity.this);
-                        alertbBuilder.setView(edit);
-                        alertbBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                Toast.makeText(MainActivity.this, "The name is : " + edit.getText().toString(), Toast.LENGTH_SHORT).show();
-                                MyUtility.saveImageToGallery(getApplicationContext(), bitmap, "rephoto", edit.getText().toString() + "-ori.jpg");
-                                imageName = edit.getText().toString();
-                            }
-                        });
-                        alertbBuilder.setNegativeButton("close", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                //Toast.makeText(MainActivity.this, "你点了取消", Toast.LENGTH_SHORT).show();
-                                drawView.getCanvas();
-                                drawView.clearDraw();
-                                clearButton.setVisibility(View.INVISIBLE);
-                                okButton.setVisibility(View.VISIBLE);
-                                photosOk = -2;
-                                drawView.update();
-
-                            }
-                        });
-
-                        alertbBuilder.show();
+                        textSaveView.setVisibility(View.VISIBLE);
+                        takePhotoButton.setVisibility(View.INVISIBLE);
+                        Log.i("test-clear", "yes");
                         break;
                     case 0:
+                        /**
                         builder.setTitle("method");
                         builder.setIcon(R.mipmap.ic_launcher);
                         builder.setSingleChoiceItems(single_list, 0, new DialogInterface.OnClickListener() {
@@ -474,6 +511,10 @@ public class MainActivity extends AppCompatActivity {
                                 // startRecord();
                             }
                         });
+                         */
+                        paintColor = Color.RED;
+                        setNew();
+                        photosOk = 1;
 
                         showPhotosId = 0;
                         if (paintColor == Color.RED)
@@ -483,9 +524,14 @@ public class MainActivity extends AppCompatActivity {
                         else
                             folderName = System.currentTimeMillis() + "-ab";
 
+                        /**
                         AlertDialog dialog = builder.create();
                         dialog.show();
+                         */
+                        takePhotoButton.setBackgroundResource(R.drawable.snap_button_stop);
                         textInfoView.setVisibility(View.VISIBLE);
+                        clearButton.setVisibility(View.GONE);
+                        okButton.setVisibility(View.GONE);
                         st = System.currentTimeMillis();
                         //takePhotoButton.setText("Stop");
                         break;
@@ -495,7 +541,9 @@ public class MainActivity extends AppCompatActivity {
                         calculateLinesFrom(scaleBitmap(bestBitmap, (float) (scaleCalImage), (float) (scaleCalImage)));
                         nowBitmap = bestBitmap;
                         okButton.setVisibility(View.VISIBLE);
+                        clearButton.setVisibility(View.VISIBLE);
                         takePhotoButton.setVisibility(View.INVISIBLE);
+                        takePhotoButton.setBackgroundResource(R.drawable.snap_button);
                         //bestBitmap = bitmap;
                         textInfoView.setVisibility(View.INVISIBLE);
                         //takePhotoButton.setVisibility(View.INVISIBLE);
@@ -535,8 +583,10 @@ public class MainActivity extends AppCompatActivity {
                     case 5:
                         nowBitmap = bitmap;
                         calculateLinesFrom(scaleBitmap(bitmap, (float) (scaleCalImage), (float) (scaleCalImage)));
+                        clearButton.setVisibility(View.VISIBLE);
                         okButton.setVisibility(View.VISIBLE);
                         takePhotoButton.setVisibility(View.INVISIBLE);
+                        takePhotoButton.setBackgroundResource(R.drawable.snap_button);
                         bestBitmap = bitmap;
                         photosOk = 3;
                         ed = System.currentTimeMillis();
@@ -551,11 +601,28 @@ public class MainActivity extends AppCompatActivity {
     private Camera.PreviewCallback mCameraPreviewCallback = new Camera.PreviewCallback() {
         @Override
         public void onPreviewFrame(byte[] data, Camera camera) {
-            if (photosOk == 0) {
+            /**
+            drawView.getCanvas();
+            drawView.clearDraw();
+            testDraw();
+            drawView.update();
+             */
+            if (photosOk == -2) {
+                drawView.getCanvas();
+                drawView.clearDraw();
+                drawView.drawBack(0.f, (float)previewSize.height / 5 * 4, (float)previewSize.width, (float)previewSize.height);
+                drawView.update();
+            } else if (photosOk == -1) {
+                drawView.getCanvas();
+                drawView.clearDraw();
+                drawView.drawBitmap(originBitmap);
+                drawView.update();
+            } else if (photosOk == 0) {
                 drawView.getCanvas();
                 drawView.clearDraw();
                 drawView.drawInfoTest(info);
                 drawView.drawBitmap(lookBitmap);
+                drawView.drawBack(0.f, (float)previewSize.height / 5 * 4, (float)previewSize.width, (float)previewSize.height);
                 drawView.update();
             } else if (photosOk > 0){
                 if (photosOk < 3 || photosOk == 5) {
@@ -608,11 +675,15 @@ public class MainActivity extends AppCompatActivity {
                     if (photosOk != 4) {
                         drawView.drawInfoTest(info);
                         drawView.drawBitmap(lookBitmap);
-                        drawView.drawLocateInfo(originLocate, Color.BLUE);
-                        drawView.drawLocateInfo(nowLocate, paintColor);
+                        drawView.drawLocateInfo(originLocate, Color.parseColor("#E020D0EF"));
+                        drawView.drawLocateInfo(nowLocate, Color.parseColor("#E0E05050"));
                         //drawView.drawLocateInfo(testLocate, Color.GREEN);
                     }
                 }
+                if (photosOk == -2 || photosOk == 0 || photosOk == 1)
+                drawView.drawBack(0.f, (float)previewSize.height / 5 * 4, (float)previewSize.width, (float)previewSize.height);
+                if (photosOk == 1 || photosOk == 2)
+                testDraw();
                 drawView.update();
                /*
                 */
@@ -656,7 +727,7 @@ public class MainActivity extends AppCompatActivity {
                     textImageView.setTextColor(Color.RED);
                 }
             } else {
-                handleFocus(event);
+                //handleFocus(event);
             }
         }
         return true;
@@ -767,16 +838,29 @@ public class MainActivity extends AppCompatActivity {
 
     private void testDraw() {
         /**测试绘制 */
-        drawView.getCanvas();
-        drawView.clearDraw();
-        drawView.drawSphere(new PointF((float)previewSize.width - 250, (float)250), 0.5f);
-        drawView.update();
+        PointF center = new PointF((float)200, (float)previewSize.height / 10 * 9);
+        drawView.drawPhone(center, 0.8f);
+        drawView.drawSphere(center, 0.8f);
+        if (info[1] == "向左转")
+            drawView.drawLeftArrow(new PointF(center.x, center.y), 0.8f);
+        else if (info[1] == "向右转")
+            drawView.drawRightArrow(new PointF(center.x, center.y), 0.8f);
+
+        if (info[0] == "向上转")
+            drawView.drawUpArrow(new PointF(center.x, center.y), 0.8f);
+        else if (info[0] == "向下转")
+            drawView.drawDownArrow(new PointF(center.x, center.y), 0.8f);
+
+        if (info[2] == "向左摆")
+            drawView.drawZNArrow(new PointF(center.x, center.y), 0.8f);
+        else if (info[2] == "向右摆")
+            drawView.drawZSArrow(new PointF(center.x, center.y), 0.8f);
     }
 
     /**手动聚焦***/
     private void handleFocus(MotionEvent event) {
 
-        testDraw();
+
 
         Camera.Parameters params = mCamera.getParameters();
         Log.i("----", params.toString());

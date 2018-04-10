@@ -2,6 +2,7 @@ package com.example.wu6shen.rephoto;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
@@ -34,6 +35,9 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
 
     private Point centerPoint = new Point(925, 190);
     private float lenCoordinate = 125;
+    private float dleftx = 0;
+    private float dupy = 0;
+    private float dzy = 0;
     private float posRotate = 80;
     private float sizeRotate = 20;
     private float angleD = (float)Math.PI / 6;
@@ -113,6 +117,7 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
             Paint paint = new Paint();
             paint.setColor(color);
             paint.setStrokeWidth(10);
+            paint.setAntiAlias(true);
             for (int i = 0; i < 4; i++) {
                 int j = (i + 1) % 4;
                 mCanvas.drawLine((float)locateInfo.frame[i].x, (float)locateInfo.frame[i].y,
@@ -178,9 +183,8 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
     public void drawSphere(PointF center, float scale) {
         if (mCanvas != null) {
             Paint paintDraw = new Paint();
-            paintDraw.setColor(Color.parseColor("#A0FFFFFF"));
             paintDraw.setStyle(Paint.Style.STROKE);
-            paintDraw.setStrokeWidth(5.0f);
+            paintDraw.setStrokeWidth(8.0f);
             paintDraw.setAntiAlias(true);
             float a = 200 * scale, b = 80 * scale;
             float C = (float)(Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (3 * b + a))));
@@ -191,15 +195,21 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
             list[0] = C / 2;
             DashPathEffect effects = new DashPathEffect(list, 0);
             paintDraw.setPathEffect(effects);
+            paintDraw.setColor(Color.parseColor("#C0FFFFFF"));
             RectF rect = new RectF(center.x - a, center.y - b, center.x + a, center.y + b);
             mCanvas.drawOval(rect, paintDraw);
+
+
             rect = new RectF(center.x - b, center.y - a, center.x + b, center.y + a);
             effects = new DashPathEffect(list, -C / 4);
             paintDraw.setPathEffect(effects);
+            paintDraw.setColor(Color.parseColor("#C0FFFFFF"));
             mCanvas.drawOval(rect, paintDraw);
+
             rect = new RectF(center.x - a, center.y - a, center.x + a, center.y + a);
             effects = new DashPathEffect(new float[]{1, 0}, 0);
             paintDraw.setPathEffect(effects);
+            paintDraw.setColor(Color.parseColor("#C0FFFFFF"));
             mCanvas.drawOval(rect, paintDraw);
         }
     }
@@ -210,178 +220,276 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    public void drawBack(float x1, float y1, float x2, float y2) {
+        if (mCanvas != null) {
+            Paint paint = new Paint();
+            paint.setColor(Color.parseColor("#A0303030"));
+            mCanvas.drawRect(x1, y1, x2, y2, paint);
+        }
+    }
+
     public void drawPhone(PointF center, float scale) {
         if (mCanvas != null) {
             Paint paintDraw = new Paint();
+            /**
+            Bitmap bitmap = BitmapFactory.decodeResource(this.getContext().getResources(), R.drawable.phone);
+            Rect src = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+            Rect rect = new Rect((int)center.x - 60, (int)center.y - 120, (int)center.x + 60, (int)center.y + 120);
+            mCanvas.drawBitmap(bitmap, src, rect, paintDraw);
+             */
             Paint paintErase = new Paint();
             paintDraw.setStyle(Paint.Style.FILL);
-            paintDraw.setColor(Color.parseColor("#A0FFFFFF"));
+            paintDraw.setColor(Color.parseColor("#C08F8F8F"));
 
-            /**test*/
-            paintDraw.setColor(Color.parseColor("#70FFFFFF"));
+
+            paintDraw.setColor(Color.parseColor("#808F8F8F"));
             paintDraw.setStyle(Paint.Style.STROKE);
             for (int i = 0; i < 10; i++) {
-                RectF outRectF = new RectF(center.x - 85 + i, center.y - 150 - i, center.x + 85 + i, center.y + 150 - i);
-                mCanvas.drawRoundRect(outRectF, 15, 15, paintDraw);
+                RectF outRectF = new RectF(center.x - 85 * scale + i, center.y - 150 * scale - i, center.x + 85 * scale + i, center.y + 150 * scale - i);
+                mCanvas.drawRoundRect(outRectF, 15 * scale, 15 * scale, paintDraw);
             }
 
             paintDraw.setStyle(Paint.Style.FILL);
-            paintDraw.setColor(Color.parseColor("#C0FFFFFF"));
-            RectF outRectF = new RectF(center.x - 85, center.y - 150, center.x + 85, center.y + 150);
-            mCanvas.drawRoundRect(outRectF, 15, 15, paintDraw);
+            paintDraw.setColor(Color.parseColor("#C08F8F8F"));
+            RectF outRectF = new RectF(center.x - 85 * scale, center.y - 150 * scale, center.x + 85 * scale, center.y + 150 * scale);
+            mCanvas.drawRoundRect(outRectF, 15 * scale, 15 * scale, paintDraw);
 
-            RectF inRectF = new RectF(center.x - 75, center.y - 135, center.x + 75, center.y + 105);
+            RectF inRectF = new RectF(center.x - 75 * scale, center.y - 135 * scale, center.x + 75 * scale, center.y + 105 * scale);
 
+            /*
             paintErase.setAlpha(0);
             paintErase.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
+            */
+            paintErase.setColor(Color.parseColor("#C0F0F0F0"));
             mCanvas.drawRoundRect(inRectF, 7.5f, 7.5f, paintErase);
 
-            mCanvas.drawCircle(center.x, center.y + 255.0f/2, 12,paintErase);
+            paintErase.setColor(Color.parseColor("#C0808080"));
+            mCanvas.drawCircle(center.x, center.y + 255.0f/2 * scale, 12 * scale,paintErase);
+            /**test
+             */
 
-        }
-    }
-
-    public void drawFrontArrow(PointF center, float scale) {
-        if (mCanvas != null) {
-            Paint paint = new Paint();
-            paint.setStyle(Paint.Style.FILL);
-            paint.setColor(Color.parseColor("#A0FFFFFF"));
-            Path mPath = new Path();
-
-            /**1*/
-            mPath.moveTo(center.x - 20 * scale, center.y - 40 * scale);
-            /**2*/
-            mPath.lineTo(center.x + 90 * scale, center.y - 40 * scale);
-            /**3*/
-            mPath.lineTo(center.x - 10 * scale, center.y + 40 * scale);
-            /**4*/
-            mPath.lineTo(center.x + 30 * scale, center.y + 40 * scale);
-            /**5*/
-            mPath.lineTo(center.x - 70 * scale, center.y + 80 * scale);
-            /**6*/
-            mPath.lineTo(center.x - 80 * scale, center.y + 40 * scale);
-            /**7*/
-            mPath.lineTo(center.x - 60 * scale, center.y + 40 * scale);
-
-            mPath.close();
-            mCanvas.drawPath(mPath, paint);
-        }
-    }
-
-    public void drawBehindArrow(PointF center, float scale) {
-        if (mCanvas != null) {
-            Paint paint = new Paint();
-            paint.setStyle(Paint.Style.FILL);
-            paint.setColor(Color.parseColor("#A0FFFFFF"));
-            PathEffect effect = new DashPathEffect(new float[] {3, 3, 3, 3}, 1f);
-            paint.setPathEffect(effect);
-            Path mPath = new Path();
-            /**1*/
-            mPath.moveTo(center.x + 10 * scale, center.y + 50 * scale);
-            /**2*/
-            mPath.lineTo(center.x - 80 * scale, center.y + 50 * scale);
-            /**3*/
-            mPath.lineTo(center.x + 10 * scale, center.y - 50 * scale);
-            /**4*/
-            mPath.lineTo(center.x - 10 * scale, center.y - 50 * scale);
-            /**5*/
-            mPath.lineTo(center.x + 60 * scale, center.y - 90 * scale);
-            /**6*/
-            mPath.lineTo(center.x + 70 * scale, center.y - 50 * scale);
-            /**7*/
-            mPath.lineTo(center.x + 50 * scale, center.y - 50 * scale);
-
-            mPath.close();
-            mCanvas.drawPath(mPath, paint);
-        }
-
-    }
-
-    public void drawDownArrow(PointF center, float scale) {
-        if (mCanvas != null) {
-            Paint paint = new Paint();
-            paint.setStyle(Paint.Style.FILL);
-            paint.setColor(Color.parseColor("#A0FFFFFF"));
-            Path mPath = new Path();
-            mPath.moveTo(center.x + 15 * scale, center.y - 110 * scale);
-            mPath.lineTo(center.x - 15 * scale, center.y - 90 * scale);
-            mPath.lineTo(center.x - 15 * scale, center.y + 90 * scale);
-            mPath.lineTo(center.x - 30 * scale, center.y + 97.5f * scale);
-            mPath.lineTo(center.x, center.y + 120 * scale);
-            mPath.lineTo(center.x + 35 * scale, center.y + 65 * scale);
-            mPath.lineTo(center.x + 15 * scale, center.y + 75 * scale);
-            mPath.close();
-            mCanvas.drawPath(mPath, paint);
         }
     }
 
     public void drawUpArrow(PointF center, float scale) {
         if (mCanvas != null) {
-            Paint paint = new Paint();
-            paint.setStyle(Paint.Style.FILL);
-            paint.setColor(Color.parseColor("#A0FFFFFF"));
+            float a = 200 * scale, b = 80 * scale;
+            dupy+=5;
+            if (dupy > 100) dupy = 0;
+            float sy = (-a + dupy - 50) * scale;
+            for (; sy < a * scale ; sy += 100 * scale) {
+                float y = sy;
+                float ey = Math.min(a * scale, 50 * scale + y);
+                y = Math.max(-a * scale, y);
+                float x = -(float) Math.sqrt(1 - y * y / a / a) * b;
+                Path mPath = new Path();
+                mPath.moveTo(center.x + x, center.y + y);
+                for (; y < ey; y += 0.1f) {
+                    x = -(float) Math.sqrt(1 - y * y / a / a) * b;
+                    mPath.lineTo(center.x + x, center.y + y);
+                }
+                Paint paint = new Paint();
+                paint.setStyle(Paint.Style.STROKE);
+                paint.setStrokeWidth(5.0f);
+                paint.setColor(Color.parseColor("#E000D0FF"));
+                paint.setAntiAlias(true);
+                mCanvas.drawPath(mPath, paint);
+                double k = -a * a / b / b * x / y;
+                double theta = Math.atan(k)+ Math.PI;
+                if (y < 0) theta -= Math.PI;
+                double length = 10 * scale;
+                double x1 = x + length * Math.cos(theta + 0.5), y1 = y + length * Math.sin(theta + 0.5);
+                double x2 = x + length * Math.cos(theta - 0.5), y2 = y + length * Math.sin(theta - 0.5);
+                Path tri = new Path();
+                tri.moveTo(center.x + x, center.y + y);
+                tri.lineTo(center.x + (float) x1, center.y + (float) y1);
+                tri.lineTo(center.x + (float) x2, center.y + (float) y2);
+                tri.close();
+                mCanvas.drawPath(tri, paint);
+            }
+        }
+    }
+
+    public void drawDownArrow(PointF center, float scale) {
+        if (mCanvas != null) {
+            float a = 200 * scale, b = 80 * scale;
+            dupy+=5;
+            if (dupy > 100) dupy = 0;
+            float sy = (a + 50 - dupy) * scale;
+            for (; sy > -a * scale; sy -= 100 * scale) {
+                float y = sy;
+                float ey = Math.max(-a * scale, y - 50 * scale);
+                y = Math.min(a * scale, y);
+                float x = -(float) Math.sqrt(1 - y * y / a / a) * b;
+                Path mPath = new Path();
+                mPath.moveTo(center.x + x, center.y + y);
+                for (; y > ey; y -= 0.1f) {
+                    x = -(float) Math.sqrt(1 - y * y / a / a) * b;
+                    mPath.lineTo(center.x + x, center.y + y);
+                }
+                Paint paint = new Paint();
+                paint.setStyle(Paint.Style.STROKE);
+                paint.setStrokeWidth(5.0f);
+                paint.setColor(Color.parseColor("#E000D0FF"));
+                paint.setAntiAlias(true);
+                mCanvas.drawPath(mPath, paint);
+                double k = -a * a / b / b * x / y;
+                double theta = Math.atan(k) + Math.PI;
+                if (y > 0) theta -= Math.PI;
+
+                double length = 10 * scale;
+                double x1 = x + length * Math.cos(theta + 0.5), y1 = y + length * Math.sin(theta + 0.5);
+                double x2 = x + length * Math.cos(theta - 0.5), y2 = y + length * Math.sin(theta - 0.5);
+                Path tri = new Path();
+                tri.moveTo(center.x + x, center.y + y);
+                tri.lineTo(center.x + (float) x1, center.y + (float) y1);
+                tri.lineTo(center.x + (float) x2, center.y + (float) y2);
+                tri.close();
+                mCanvas.drawPath(tri, paint);
+            }
+        }
+    }
+
+    public void drawZSArrow(PointF center, float scale) {
+        if (mCanvas != null) {
+            float a = 200 * scale, b = 200 * scale;
+            dzy-=5;
+            if (dzy < -50) dzy = +50;
+            float y = (30 + dzy) * scale;
+            float x = -(float)Math.sqrt(1 - y * y / a / a) * b;
+            float ey = (-30 + dzy) * scale;
             Path mPath = new Path();
-            mPath.moveTo(center.x - 15 * scale, center.y + 110 * scale);
-            mPath.lineTo(center.x + 15 * scale, center.y + 90 * scale);
-            mPath.lineTo(center.x + 15 * scale, center.y - 90 * scale);
-            mPath.lineTo(center.x + 35 * scale, center.y - 110 * scale);
-            mPath.lineTo(center.x, center.y - 120 * scale);
-            mPath.lineTo(center.x - 35 * scale, center.y - 50 * scale);
-            mPath.lineTo(center.x - 15 * scale, center.y - 70 * scale);
-            mPath.close();
+            mPath.moveTo(center.x + x, center.y + y);
+            for (; y > ey; y -= 0.1f) {
+                x = -(float)Math.sqrt(1 - y * y / a / a) * b;
+                mPath.lineTo(center.x + x, center.y + y);
+            }
+            Paint paint = new Paint();
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeWidth(5.0f);
+            paint.setColor(Color.parseColor("#E000D0FF"));
+            paint.setAntiAlias(true);
             mCanvas.drawPath(mPath, paint);
+            double k = -a*a/b/b * x / y;
+            double theta = -Math.abs(Math.atan(k)) + Math.PI;
+            double length = 10 * scale;
+            double x1 = x + length * Math.cos(theta + 0.5), y1 = y + length * Math.sin(theta + 0.5);
+            double x2 = x + length * Math.cos(theta - 0.5), y2 = y + length * Math.sin(theta - 0.5);
+            Path tri = new Path();
+            tri.moveTo(center.x + x, center.y + y);
+            tri.lineTo(center.x + (float)x1, center.y + (float)y1);
+            tri.lineTo(center.x + (float)x2, center.y + (float)y2);
+            tri.close();
+            mCanvas.drawPath(tri, paint);
+        }
+    }
+
+    public void drawZNArrow(PointF center, float scale) {
+        if (mCanvas != null) {
+            float a = 200 * scale, b = 200 * scale;
+            dzy+=5;
+            if (dzy > 50) dzy = -50;
+            float y = (-30 + dzy) * scale;
+            float x = -(float)Math.sqrt(1 - y * y / a / a) * b;
+            float ey = (30 + dzy) * scale;
+            Path mPath = new Path();
+            mPath.moveTo(center.x + x, center.y + y);
+            for (; y < ey; y += 0.1f) {
+                x = -(float)Math.sqrt(1 - y * y / a / a) * b;
+                mPath.lineTo(center.x + x, center.y + y);
+            }
+            Paint paint = new Paint();
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeWidth(5.0f);
+            paint.setColor(Color.parseColor("#E000D0FF"));
+            paint.setAntiAlias(true);
+            mCanvas.drawPath(mPath, paint);
+            double k = -a*a/b/b * x / y;
+            double theta = Math.abs(Math.atan(k)) + Math.PI;
+            double length = 10 * scale;
+            double x1 = x + length * Math.cos(theta + 0.5), y1 = y + length * Math.sin(theta + 0.5);
+            double x2 = x + length * Math.cos(theta - 0.5), y2 = y + length * Math.sin(theta - 0.5);
+            Path tri = new Path();
+            tri.moveTo(center.x + x, center.y + y);
+            tri.lineTo(center.x + (float)x1, center.y + (float)y1);
+            tri.lineTo(center.x + (float)x2, center.y + (float)y2);
+            tri.close();
+            mCanvas.drawPath(tri, paint);
+        }
+    }
+    public void drawRightArrow(PointF center, float scale) {
+        if (mCanvas != null) {
+            float a = 200 * scale, b = 80 * scale;
+            dleftx+=5;
+            if (dleftx > 100) dleftx = 0;
+            float sy = (a + 50 - dleftx) * scale;
+            for (; sy > -a * scale; sy -= 100 * scale) {
+                float x = sy;
+                float ex = Math.max(-a * scale, (x - 50 * scale));
+                x = Math.min(a * scale, x);
+                float y = (float)Math.sqrt(1 - x * x / a / a) * b;
+                Path mPath = new Path();
+                mPath.moveTo(center.x + x, center.y + y);
+                for (; x > ex; x -= 0.1f) {
+                    y = (float)Math.sqrt(1 - x * x / a / a) * b;
+                    mPath.lineTo(center.x + x, center.y + y);
+                }
+                Paint paint = new Paint();
+                paint.setStyle(Paint.Style.STROKE);
+                paint.setStrokeWidth(5.0f);
+                paint.setColor(Color.parseColor("#E000D0FF"));
+                paint.setAntiAlias(true);
+                mCanvas.drawPath(mPath, paint);
+                double k = -b*b/a/a * x / y;
+                double theta = Math.atan(k);
+                double length = 10 * scale;
+                double x1 = x + length * Math.cos(theta + 0.5), y1 = y + length * Math.sin(theta + 0.5);
+                double x2 = x + length * Math.cos(theta - 0.5), y2 = y + length * Math.sin(theta - 0.5);
+                Path tri = new Path();
+                tri.moveTo(center.x + x, center.y + y);
+                tri.lineTo(center.x + (float)x1, center.y + (float)y1);
+                tri.lineTo(center.x + (float)x2, center.y + (float)y2);
+                tri.close();
+                mCanvas.drawPath(tri, paint);
+            }
         }
     }
 
     public void drawLeftArrow(PointF center, float scale) {
         if (mCanvas != null) {
-            Paint paint = new Paint();
-            paint.setStyle(Paint.Style.FILL);
-            paint.setColor(Color.parseColor("#A0FFFFFF"));
-            Path mPath = new Path();
-            /**1*/
-            mPath.moveTo(center.x - 70 * scale, center.y - 10 * scale);
-            /**2*/
-            mPath.lineTo(center.x - 90 * scale, center.y + 10 * scale);
-            /**3*/
-            mPath.lineTo(center.x + 70 * scale, center.y + 10 * scale);
-            /**4*/
-            mPath.lineTo(center.x + 50 * scale, center.y + 30 * scale);
-            /**5*/
-            mPath.lineTo(center.x + 120 * scale, center.y);
-            /**6*/
-            mPath.lineTo(center.x + 100 * scale, center.y - 20 * scale);
-            /**7*/
-            mPath.lineTo(center.x + 90 * scale, center.y - 10 * scale);
-
-            mPath.close();
-            mCanvas.drawPath(mPath, paint);
-        }
-    }
-
-    public void drawRightArrow(PointF center, float scale) {
-        if (mCanvas != null) {
-            Paint paint = new Paint();
-            paint.setStyle(Paint.Style.FILL);
-            paint.setColor(Color.parseColor("#A0FFFFFF"));
-            Path mPath = new Path();
-            /**1*/
-            mPath.moveTo(center.x + 70 * scale, center.y - 10 * scale);
-            /**2*/
-            mPath.lineTo(center.x + 90 * scale, center.y + 10 * scale);
-            /**3*/
-            mPath.lineTo(center.x - 70 * scale, center.y + 10 * scale);
-            /**4*/
-            mPath.lineTo(center.x - 50 * scale, center.y + 30 * scale);
-            /**5*/
-            mPath.lineTo(center.x - 120 * scale, center.y);
-            /**6*/
-            mPath.lineTo(center.x - 100 * scale, center.y - 20 * scale);
-            /**7*/
-            mPath.lineTo(center.x - 90 * scale, center.y - 10 * scale);
-
-            mPath.close();
-            mCanvas.drawPath(mPath, paint);
+            float a = 200 * scale, b = 80 * scale;
+            dleftx+=5;
+            if (dleftx > 100) dleftx = 0;
+            float sx = (-a + dleftx - 50) * scale;
+            for (; sx < a * scale; sx += 100 * scale) {
+                float x = sx;
+                float ex = Math.min(a * scale, x + 50 * scale);
+                x = Math.max(-a * scale, x);
+                float y = (float) Math.sqrt(1 - x * x / a / a) * b;
+                Path mPath = new Path();
+                mPath.moveTo(center.x + x, center.y + y);
+                for (; x < ex; x += 0.1f) {
+                    y = (float) Math.sqrt(1 - x * x / a / a) * b;
+                    mPath.lineTo(center.x + x, center.y + y);
+                }
+                Paint paint = new Paint();
+                paint.setStyle(Paint.Style.STROKE);
+                paint.setStrokeWidth(5.0f);
+                paint.setColor(Color.parseColor("#E000D0FF"));
+                paint.setAntiAlias(true);
+                mCanvas.drawPath(mPath, paint);
+                double k = -b * b / a / a * x / y;
+                double theta = Math.atan(k) + Math.PI;
+                double length = 10 * scale;
+                double x1 = x + length * Math.cos(theta + 0.5), y1 = y + length * Math.sin(theta + 0.5);
+                double x2 = x + length * Math.cos(theta - 0.5), y2 = y + length * Math.sin(theta - 0.5);
+                Path tri = new Path();
+                tri.moveTo(center.x + x, center.y + y);
+                tri.lineTo(center.x + (float) x1, center.y + (float) y1);
+                tri.lineTo(center.x + (float) x2, center.y + (float) y2);
+                tri.close();
+                mCanvas.drawPath(tri, paint);
+            }
         }
 
     }
