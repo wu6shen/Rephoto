@@ -120,12 +120,16 @@ Java_com_example_wu6shen_rephoto_MainActivity_initTrack(JNIEnv *env, jobject ins
     cv::Mat *ptrMat = (cv::Mat*) src;
 
     my_track = reloc::Track(*ptrMat, 0, 0);
+    
+    /*
+     * v
     cv::Ptr<cv::Feature2D> ptr = cv::SIFT::create(500, 5);
     std::vector<cv::KeyPoint> kp;
     cv::Mat des, mask;
     ptr->detectAndCompute(*ptrMat, mask, kp, des);
     end = clock();
     __android_log_print(ANDROID_LOG_INFO, "info", "sift time descriptor:%lf", (end - start) / CLOCKS_PER_SEC);
+     */
 
 }
 

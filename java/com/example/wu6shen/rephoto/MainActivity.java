@@ -64,7 +64,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**计算图片大小192 * 180*/
-    private static double scaleCalImage = 0.25;
+    private static double scaleCalImage = 0.50;
+    private static double scaleShowImage = 0.25;
     /**框占图片大小*/
     private static double scaleFrameSize = 3.0 / 5;
 
@@ -110,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
     private double nowScore;
     private double stopScore = 97;
     private String[] info = new String[6];
+    private double[] errors = new double[6];
     private String textInfo;
     private String imageName;
     private TextView textInfoView;
@@ -190,7 +192,11 @@ public class MainActivity extends AppCompatActivity {
                             //Toast.makeText(MainActivity.this, "The name is : " + edit.getText().toString(), Toast.LENGTH_SHORT).show();
                             MyUtility.saveImageToGallery(getApplicationContext(), originBitmap, "rephoto", System.currentTimeMillis() + "-ori.jpg");
                             imageName = System.currentTimeMillis() + "";
+                    double t1 = System.currentTimeMillis();
+                    Log.i("IMAGE_SIZE", src1.width() + " " + src1.height());
                             initTrack(src1.getNativeObjAddr());
+                    double t2 = System.currentTimeMillis();
+                    Log.i("TTTTT", (t2 - t1)+ "");
                             photosOk = 0;
                             takePhotoButton.setVisibility(View.VISIBLE);
 
@@ -333,9 +339,12 @@ public class MainActivity extends AppCompatActivity {
                     Bitmap bitmap = BitmapFactory.decodeStream(this.getContentResolver().openInputStream(selectedImage));
                     Log.i("Activity", bitmap.getWidth() + " " + bitmap.getHeight());
                     originBitmap = scaleBitmap(bitmap, (float) (1080.0f / bitmap.getWidth()), (float) (1920.0f / bitmap.getHeight()));
-                    lookBitmap = scaleBitmap(originBitmap, (float) (scaleCalImage * 1.3), (float) (scaleCalImage * 1.3));
+                    lookBitmap = scaleBitmap(originBitmap, (float) (scaleShowImage * 1.3), (float) (scaleShowImage * 1.3));
                     Utils.bitmapToMat(scaleBitmap(originBitmap, (float) scaleCalImage, (float) scaleCalImage), src1);
+                    double t1 = System.currentTimeMillis();
                     initTrack(src1.getNativeObjAddr());
+                    double t2 = System.currentTimeMillis();
+                    Log.i("TTTTTT", (t2 - t1) + "");
                     photosOk = 0;
                     okButton.setVisibility(View.GONE);
                     openButton.setVisibility(View.GONE);
@@ -404,6 +413,7 @@ public class MainActivity extends AppCompatActivity {
          */
 
         info = nowLocate.getInfo(originLocate);
+        errors = nowLocate.getErrors();
         for (int i = 0; i < 6; i++) {
             //Log.i("Info", info[i]);
         }
@@ -419,7 +429,6 @@ public class MainActivity extends AppCompatActivity {
                 okButton.setVisibility(View.VISIBLE);
                 clearButton.setVisibility(View.VISIBLE);
                 takePhotoButton.setVisibility(View.INVISIBLE);
-                takePhotoButton.setBackgroundResource(R.drawable.snap_button);
                 //bestBitmap = bitmap;
                 textInfoView.setVisibility(View.INVISIBLE);
                 //takePhotoButton.setVisibility(View.INVISIBLE);
@@ -431,6 +440,7 @@ public class MainActivity extends AppCompatActivity {
                 goOn.setPositiveButton("Stop", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
+                        takePhotoButton.setBackgroundResource(R.drawable.snap_button);
                         stopScore = 97;
                     }
                 });
@@ -441,7 +451,7 @@ public class MainActivity extends AppCompatActivity {
                         textInfoView.setVisibility(View.VISIBLE);
                         okButton.setVisibility(View.INVISIBLE);
                         clearButton.setVisibility(View.GONE);
-                        takePhotoButton.setVisibility(View.INVISIBLE);
+                        takePhotoButton.setVisibility(View.VISIBLE);
                         stopScore += 0.5;
                     }
                 });
@@ -477,7 +487,7 @@ public class MainActivity extends AppCompatActivity {
 
                     case -2:
                         originBitmap = bitmap;
-                        lookBitmap = scaleBitmap(bitmap, (float)(scaleCalImage * 1.3), (float)(scaleCalImage * 1.3));
+                        lookBitmap = scaleBitmap(bitmap, (float)(scaleShowImage * 1.3), (float)(scaleShowImage * 1.3));
                         Utils.bitmapToMat(scaleBitmap(bitmap, (float)scaleCalImage, (float)scaleCalImage), src1);
                         photosOk = -1;
                         okButton.setVisibility(View.VISIBLE);
@@ -601,16 +611,14 @@ public class MainActivity extends AppCompatActivity {
     private Camera.PreviewCallback mCameraPreviewCallback = new Camera.PreviewCallback() {
         @Override
         public void onPreviewFrame(byte[] data, Camera camera) {
+
             /**
-            drawView.getCanvas();
-            drawView.clearDraw();
-            testDraw();
-            drawView.update();
              */
             if (photosOk == -2) {
                 drawView.getCanvas();
                 drawView.clearDraw();
                 drawView.drawBack(0.f, (float)previewSize.height / 5 * 4, (float)previewSize.width, (float)previewSize.height);
+                //testDraw();
                 drawView.update();
             } else if (photosOk == -1) {
                 drawView.getCanvas();
@@ -644,6 +652,7 @@ public class MainActivity extends AppCompatActivity {
 
                             long stop = System.currentTimeMillis();
                             Log.i("info", "Time:" + (stop - start));
+                            Log.i("IMAGE_SIZE", src1.width() + " " + src1.height());
                             Log.i("type", src1.type() + " " + src2.type());
                             ed = System.currentTimeMillis();
 
@@ -683,7 +692,8 @@ public class MainActivity extends AppCompatActivity {
                 if (photosOk == -2 || photosOk == 0 || photosOk == 1)
                 drawView.drawBack(0.f, (float)previewSize.height / 5 * 4, (float)previewSize.width, (float)previewSize.height);
                 if (photosOk == 1 || photosOk == 2)
-                testDraw();
+                drawArrow();
+                //testDraw();
                 drawView.update();
                /*
                 */
@@ -836,7 +846,7 @@ public class MainActivity extends AppCompatActivity {
         return x;
     }
 
-    private void testDraw() {
+    private void drawArrow() {
         /**测试绘制 */
         PointF center = new PointF((float)200, (float)previewSize.height / 10 * 9);
         drawView.drawPhone(center, 0.8f);
@@ -855,6 +865,18 @@ public class MainActivity extends AppCompatActivity {
             drawView.drawZNArrow(new PointF(center.x, center.y), 0.8f);
         else if (info[2] == "向右摆")
             drawView.drawZSArrow(new PointF(center.x, center.y), 0.8f);
+    }
+
+    private void testDraw() {
+        /**测试绘制 */
+        PointF center = new PointF((float)200, (float)previewSize.height / 10 * 9);
+        double test = Math.min(Math.abs(errors[0]), 100) / 150;
+        if (errors[0] < 0) test = -test;
+        drawView.drawSphereX(center, 0.8f, (float)test);
+        test = Math.min(Math.abs(errors[1]), 100) / 150;
+        if (errors[1] < 0) test = -test;
+        center = new PointF((float)previewSize.width - 200, (float)previewSize.height / 10 * 9);
+        //drawView.drawSphereY(center, 0.8f, (float)test);
     }
 
     /**手动聚焦***/

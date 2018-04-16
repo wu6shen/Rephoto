@@ -14,6 +14,7 @@ public class LocateInfo {
     public Point[] frame = new Point[4];
     public Point[] cross = new Point[4];
     public Point center = new Point();
+    double[] errors = new double[6];
 
     LocateInfo(double width, double height, double scale) {
         center = new Point(width / 2, height / 2);
@@ -64,21 +65,23 @@ public class LocateInfo {
 
     /**返回一个6位三进制数 代表正负或零 依次为
      * 仰俯 左右转 左右摆 左右移 上下移 前后移*/
+    public double[] getErrors() {
+        return errors;
+    }
     public String[] getInfo(LocateInfo origin) {
         String[] info = new String[6];
-        double[] errors = new double[6];
 
         /**case0 仰俯*/
         errors[0] = (frame[2].x - frame[3].x) - (frame[1].x - frame[0].x);
         errors[0] /= 2;
-        //Log.i("INFOGET", "Case 0:" + errors[0]);
+        Log.i("INFOGET", "Case 0:" + errors[0]);
         if (errors[0] > MyUtility.THRES) {
             //info[0] = "Rot D";
             info[0] = "向上转";
             //info[0] = 1;
             /**1*/
         } else if (errors[0] < -MyUtility.THRES) {
-            errors[0] = -errors[0];
+            //errors[0] = -errors[0];
             //info[0] = "Rot U";
             info[0] = "向下转";
             //info[0] = -1;
@@ -86,7 +89,7 @@ public class LocateInfo {
         } else {
             info[0] = MyUtility.okInfo;
             //info[0] = 0;
-            errors[0] = 0;
+            //errors[0] = 0;
             /**0*/
         }
 
@@ -100,7 +103,7 @@ public class LocateInfo {
             //info[1] = 1;
             /**1*/
         } else if (errors[1] < -MyUtility.THRES) {
-            errors[1] = -errors[1];
+            //errors[1] = -errors[1];
             //info[1] = "Rot R";
             info[1] = "向右转";
             //info[1] = -1;
@@ -121,7 +124,7 @@ public class LocateInfo {
             //info[2] = 1;
             /**1*/
         } else if (errors[2] < -MyUtility.THRES) {
-            errors[2] = -errors[2];
+            //errors[2] = -errors[2];
             //info[2] = "Rot CW ";
             info[2] = "向右摆";
             //info[2] = -1;
@@ -142,7 +145,7 @@ public class LocateInfo {
             //info[3] = 1;
             /**1*/
         } else if (errors[3] < -MyUtility.THRES) {
-            errors[3] = -errors[3];
+            //errors[3] = -errors[3];
             //info[3] = "Mov R";
             info[3] = "向左移";
             //info[3] = -1;
@@ -163,7 +166,7 @@ public class LocateInfo {
             info[4] = "向下移";
             /**1*/
         } else if (errors[4] < -MyUtility.THRES) {
-            errors[4] = -errors[4];
+            //errors[4] = -errors[4];
             //info[4] = "Mov U";
             info[4] = "向上移";
             //info[4] = -1;
@@ -187,7 +190,7 @@ public class LocateInfo {
             info[5] = "向前移";
             /**1*/
         } else if (errors[5] < -areaThres) {
-            errors[5] = -errors[5];
+            //errors[5] = -errors[5];
             //info[5] = "Mov BW ";
             info[5] = "向后移";
             //info[5] = 1;
@@ -205,7 +208,7 @@ public class LocateInfo {
             for (int j = i + 1; j < 6; j++) {
                 if (errors[j] > errors[id]) id = j;
             }
-            MyUtility.swap(errors, i, id);
+            //MyUtility.swap(errors, i, id);
             //MyUtility.swap(info, i, id);
             //Log.i("Sort", errors[i] + "");
         }

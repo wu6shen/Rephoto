@@ -214,6 +214,210 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    public void drawHalfOvalFull(PointF center, float a, float b, boolean where, Paint paint) {
+        float C = (float)(Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (3 * b + a))));
+        float[] list = new float[2];
+        list[0] = C / 2;
+        list[1] = C / 2;
+        DashPathEffect effects = new DashPathEffect(list, 0);
+        if (a < b)
+            effects = new DashPathEffect(list,  -C / 4);
+        if (where) {
+            effects = new DashPathEffect(list, C / 2);
+            if (a < b)
+                effects = new DashPathEffect(list,  C / 4);
+        }
+        paint.setPathEffect(effects);
+        RectF rect = new RectF(center.x - a, center.y - b, center.x + a, center.y + b);
+        mCanvas.drawOval(rect, paint);
+    }
+
+    public void drawHalfOvalDot(PointF center, float a, float b, boolean where, Paint paint) {
+        float C = (float)(Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (3 * b + a))));
+        float[] list = new float[26];
+        for (int i = 0; i < list.length; i++) list[i] = C / 50;
+        list[25] = C / 2;
+        DashPathEffect effects = new DashPathEffect(list, C / 50);
+        if (a < b) {
+            effects = new DashPathEffect(list, C / 50 - C / 4);
+        }
+        if (where) {
+            effects = new DashPathEffect(list, C / 2 + C / 50);
+            if (a < b) {
+                effects = new DashPathEffect(list, C / 50 + C / 4);
+            }
+        }
+        paint.setPathEffect(effects);
+        RectF rect = new RectF(center.x - a, center.y - b, center.x + a, center.y + b);
+        mCanvas.drawOval(rect, paint);
+    }
+    public void drawSphereY(PointF center, float scale, float error) {
+        if (mCanvas != null) {
+            Paint paintDraw = new Paint();
+            paintDraw.setStyle(Paint.Style.STROKE);
+            paintDraw.setStrokeWidth(5.0f);
+            paintDraw.setAntiAlias(true);
+            float a = 200 * scale, b = 80 * scale;
+            float C = (float)(Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (3 * b + a))));
+            float[] list = new float[26];
+            for (int i = 1; i < list.length; i++) {
+                list[i] = C / 50;
+            }
+            list[0] = C / 2;
+            DashPathEffect effects = new DashPathEffect(list, 0);
+            paintDraw.setPathEffect(effects);
+            paintDraw.setColor(Color.parseColor("#A0FFFFFF"));
+            RectF rect = new RectF(center.x - a, center.y - b, center.x + a, center.y + b);
+            mCanvas.drawOval(rect, paintDraw);
+
+
+            rect = new RectF(center.x - b, center.y - a, center.x + b, center.y + a);
+            effects = new DashPathEffect(list, -C / 4);
+            paintDraw.setPathEffect(effects);
+            Log.i("ERROR", error + "");
+            if (Math.abs(error) < 0.01)
+                paintDraw.setColor(Color.parseColor("#A0FF0060"));
+            else
+                paintDraw.setColor(Color.parseColor("#A0FFFFFF"));
+            mCanvas.drawOval(rect, paintDraw);
+
+            rect = new RectF(center.x - a, center.y - a, center.x + a, center.y + a);
+            effects = new DashPathEffect(new float[]{1, 0}, 0);
+            paintDraw.setPathEffect(effects);
+            if (Math.abs(error) < 0.01)
+                paintDraw.setColor(Color.parseColor("#A020D0EF"));
+            else
+                paintDraw.setColor(Color.parseColor("#A0FFFFFF"));
+            mCanvas.drawOval(rect, paintDraw);
+
+            if (error > 0.01) {
+                float b_new = b + (a - b) * error;
+                paintDraw.setColor(Color.parseColor("#C0FF0060"));
+                drawHalfOvalFull(center, b_new, a, false, paintDraw);
+                paintDraw.setColor(Color.parseColor("#A0FF0060"));
+                drawHalfOvalDot(center, b_new, a, true, paintDraw);
+                b_new = a - a * error;
+                if (b_new < 0) b_new = -b_new;
+                paintDraw.setColor(Color.parseColor("#C020D0EF"));
+                drawHalfOvalFull(center, b_new, a, true, paintDraw);
+                paintDraw.setColor(Color.parseColor("#A020D0EF"));
+                drawHalfOvalDot(center, b_new, a, false, paintDraw);
+            } else if (error < -0.01) {
+                float b_new = b - (a + b) * Math.abs(error);
+                if (b_new < 0) {
+                    b_new = -b_new;
+                    paintDraw.setColor(Color.parseColor("#C0FF0060"));
+                    drawHalfOvalFull(center, b_new, a, true, paintDraw);
+                    paintDraw.setColor(Color.parseColor("#A0FF0060"));
+                    drawHalfOvalDot(center, b_new, a, false, paintDraw);
+                } else {
+                    paintDraw.setColor(Color.parseColor("#C0FF0060"));
+                    drawHalfOvalFull(center, b_new, a, false, paintDraw);
+                    paintDraw.setColor(Color.parseColor("#A0FF0060"));
+                    drawHalfOvalDot(center, b_new, a, true, paintDraw);
+
+                }
+                b_new = a + (b - a) * Math.abs(error);
+                paintDraw.setColor(Color.parseColor("#C020D0EF"));
+                drawHalfOvalFull(center, b_new, a, false, paintDraw);
+                paintDraw.setColor(Color.parseColor("#A020D0EF"));
+                drawHalfOvalDot(center, b_new, a, true, paintDraw);
+
+
+            }
+
+
+
+
+        }
+    }
+
+    public void drawSphereX(PointF center, float scale, float error) {
+        if (mCanvas != null) {
+            Paint paintDraw = new Paint();
+            paintDraw.setStyle(Paint.Style.STROKE);
+            paintDraw.setStrokeWidth(5.0f);
+            paintDraw.setAntiAlias(true);
+            float a = 200 * scale, b = 80 * scale;
+            float C = (float)(Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (3 * b + a))));
+            float[] list = new float[26];
+            for (int i = 1; i < list.length; i++) {
+                list[i] = C / 50;
+            }
+            list[0] = C / 2;
+            DashPathEffect effects = new DashPathEffect(list, 0);
+            paintDraw.setPathEffect(effects);
+            if (Math.abs(error) < 0.01)
+            paintDraw.setColor(Color.parseColor("#A0FF0060"));
+            else
+                paintDraw.setColor(Color.parseColor("#A020D0EF"));
+            RectF rect = new RectF(center.x - a, center.y - b, center.x + a, center.y + b);
+            mCanvas.drawOval(rect, paintDraw);
+
+
+            rect = new RectF(center.x - b, center.y - a, center.x + b, center.y + a);
+            effects = new DashPathEffect(list, -C / 4);
+            paintDraw.setPathEffect(effects);
+            paintDraw.setColor(Color.parseColor("#A020D0EF"));
+            mCanvas.drawOval(rect, paintDraw);
+            paintDraw.setColor(Color.parseColor("#C0FF0060"));
+            mCanvas.drawOval(rect, paintDraw);
+
+            rect = new RectF(center.x - a, center.y - a, center.x + a, center.y + a);
+            effects = new DashPathEffect(new float[]{1, 0}, 0);
+            paintDraw.setPathEffect(effects);
+            if (Math.abs(error) < 0.01)
+            paintDraw.setColor(Color.parseColor("#A020D0EF"));
+            else
+                paintDraw.setColor(Color.parseColor("#A020D0EF"));
+            mCanvas.drawOval(rect, paintDraw);
+
+            if (error > 0.01) {
+                float b_new = b + (a - b) * error;
+                paintDraw.setColor(Color.parseColor("#C0FF0060"));
+                drawHalfOvalFull(center, a, b_new, false, paintDraw);
+                paintDraw.setColor(Color.parseColor("#A0FF0060"));
+                drawHalfOvalDot(center, a, b_new, true, paintDraw);
+                b_new = a - a * error;
+                if (b_new < 0) b_new = -b_new;
+                //paintDraw.setColor(Color.parseColor("#C020D0EF"));
+                paintDraw.setColor(Color.parseColor("#C0FF0060"));
+                drawHalfOvalFull(center, a, b_new, true, paintDraw);
+                //paintDraw.setColor(Color.parseColor("#A020D0EF"));
+                paintDraw.setColor(Color.parseColor("#A0FF0060"));
+                drawHalfOvalDot(center, a, b_new, false, paintDraw);
+            } else if (error < -0.01) {
+                float b_new = b - (a + b) * Math.abs(error);
+                if (b_new < 0) {
+                    b_new = -b_new;
+                    paintDraw.setColor(Color.parseColor("#C0FF0060"));
+                    drawHalfOvalFull(center, a, b_new, true, paintDraw);
+                    paintDraw.setColor(Color.parseColor("#A0FF0060"));
+                    drawHalfOvalDot(center, a, b_new, false, paintDraw);
+                } else {
+                    paintDraw.setColor(Color.parseColor("#C0FF0060"));
+                    drawHalfOvalFull(center, a, b_new, false, paintDraw);
+                    paintDraw.setColor(Color.parseColor("#A0FF0060"));
+                    drawHalfOvalDot(center, a, b_new, true, paintDraw);
+
+                }
+                b_new = a + (b - a) * Math.abs(error);
+                //paintDraw.setColor(Color.parseColor("#C020D0EF"));
+                paintDraw.setColor(Color.parseColor("#C0FF0060"));
+                drawHalfOvalFull(center, a, b_new, false, paintDraw);
+                //paintDraw.setColor(Color.parseColor("#A020D0EF"));
+                paintDraw.setColor(Color.parseColor("#A0FF0060"));
+                drawHalfOvalDot(center, a, b_new, true, paintDraw);
+
+
+            }
+
+
+
+
+        }
+    }
+
     public void drawText(String info, int color) {
         if (mCanvas != null) {
             Paint paint = new Paint();

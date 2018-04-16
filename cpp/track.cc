@@ -17,9 +17,9 @@ namespace reloc {
         top = 0;    //Frame stack
         
         orb_ori_ = cv::ORB::create(1000, 1.2, 8, 31, 0, 2, cv::ORB::HARRIS_SCORE, 10, 20);
-        orb_com_ = cv::ORB::create(1000, 1.2, 5, 31, 0, 2, cv::ORB::HARRIS_SCORE, 10, 20);
+        orb_com_ = cv::ORB::create(1000, 1.2, 8, 31, 0, 2, cv::ORB::HARRIS_SCORE, 10, 20);
         orb_ori_t_ = new ORBextractor(1000, 1.2, 8, 20, 7);
-        orb_com_t_ = new ORBextractor(500, 1.2, 5, 20, 7);
+        orb_com_t_ = new ORBextractor(1000, 1.2, 5, 20, 7);
         orb_com_old_t_ = new ORBextractor(1000, 1.2, 5, 20, 7);
         rect_scale_ = 1.0 / 4;
         img_scale_ = 0;
@@ -330,7 +330,7 @@ namespace reloc {
                 in_num_++;
                 int id = f1.cor_id_ori_[ids[i]];
                 if (id != -1) {
-                    __android_log_print(ANDROID_LOG_INFO, "info", "id:%d", id);
+                    //__android_log_print(ANDROID_LOG_INFO, "info", "id:%d", id);
                     if (method_ == 0) {
                         all += std::sqrt(
                                 pow(floor(
