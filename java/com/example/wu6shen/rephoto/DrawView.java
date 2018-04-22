@@ -33,7 +33,18 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
     private SurfaceHolder mHolder;
     private Canvas mCanvas;
 
-    private Point centerPoint = new Point(925, 190);
+    //private PointF centerPoint = new PointF(925, 190);
+    /**pitch view center*/
+    private PointF centerPoint = new PointF(540, 1920/2);
+
+    /**pitch view range*/
+    private float pitch_up = centerPoint.y + 120;
+    private float pitch_down = centerPoint.y - 120;
+    private float length[] = {100.f, 170.0f};
+    private float high = 80;
+
+    private float test_error = 0;
+
     private float lenCoordinate = 125;
     private float dleftx = 0;
     private float dupy = 0;
@@ -43,7 +54,7 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
     private float angleD = (float)Math.PI / 6;
 
     float angles[] = new float[6];
-    Point points[] = new Point[6];
+    PointF points[] = new PointF[6];
 
     public DrawView(Context context) {
         super(context);
@@ -53,12 +64,12 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
         /**设置为透明*/
         mHolder.setFormat(PixelFormat.TRANSPARENT);
 
-        Point xL = new Point(centerPoint.x - lenCoordinate, centerPoint.y); float angleXL = 0;
-        Point xR = new Point(centerPoint.x + lenCoordinate, centerPoint.y); float angleXR = (float)Math.PI;
-        Point yF = new Point(centerPoint.x + lenCoordinate * Math.cos(Math.PI / 6), centerPoint.y - lenCoordinate * Math.sin(Math.PI / 6)); float angleYF = (float)Math.PI * 7 / 6;
-        Point yB = new Point(centerPoint.x - lenCoordinate * Math.cos(Math.PI / 6), centerPoint.y + lenCoordinate * Math.sin(Math.PI / 6)); float angleYB = (float)Math.PI / 6;
-        Point zU = new Point(centerPoint.x, centerPoint.y - lenCoordinate); float angleZU = (float)Math.PI * 3 / 2;
-        Point zD = new Point(centerPoint.x, centerPoint.y + lenCoordinate); float angleZD = (float)Math.PI / 2;
+        PointF xL = new PointF(centerPoint.x - lenCoordinate, centerPoint.y); float angleXL = 0;
+        PointF xR = new PointF(centerPoint.x + lenCoordinate, centerPoint.y); float angleXR = (float)Math.PI;
+        PointF yF = new PointF(centerPoint.x + lenCoordinate * (float)Math.cos(Math.PI / 6), centerPoint.y - lenCoordinate * (float)Math.sin(Math.PI / 6)); float angleYF = (float)Math.PI * 7 / 6;
+        PointF yB = new PointF(centerPoint.x - lenCoordinate * (float)Math.cos(Math.PI / 6), centerPoint.y + lenCoordinate * (float)Math.sin(Math.PI / 6)); float angleYB = (float)Math.PI / 6;
+        PointF zU = new PointF(centerPoint.x, centerPoint.y - lenCoordinate); float angleZU = (float)Math.PI * 3 / 2;
+        PointF zD = new PointF(centerPoint.x, centerPoint.y + lenCoordinate); float angleZD = (float)Math.PI / 2;
         points[0] = xL; points[1] = xR;
         angles[0] = angleXL; angles[1] = angleXR;
         points[2] = yF; points[3] = yB;
@@ -100,12 +111,12 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-    public void drawLines(List<Pair<Point, Point>> lines, int color) {
+    public void drawLines(List<Pair<PointF, PointF>> lines, int color) {
         if (mCanvas != null) {
             Paint paint = new Paint();
             paint.setColor(color);
             paint.setStrokeWidth(10);
-            for (Pair<Point, Point> line : lines) {
+            for (Pair<PointF, PointF> line : lines) {
                 mCanvas.drawLine((float)line.first.x, (float)line.first.y,
                                  (float)line.second.x, (float)line.second.y, paint);
             }
@@ -118,6 +129,7 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
             paint.setColor(color);
             paint.setStrokeWidth(10);
             paint.setAntiAlias(true);
+            /** draw Rect
             for (int i = 0; i < 4; i++) {
                 int j = (i + 1) % 4;
                 mCanvas.drawLine((float)locateInfo.frame[i].x, (float)locateInfo.frame[i].y,
@@ -128,6 +140,40 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
             mCanvas.drawLine((float)locateInfo.cross[2].x, (float)locateInfo.cross[2].y,
                     (float)locateInfo.cross[3].x, (float)locateInfo.cross[3].y, paint);
 
+             */
+            float scale = (float)locateInfo.errors[5];
+            if (scale == 0) scale = 1;
+            else if (scale < 0) scale = 1f / (1 - (scale + 5) / 200f);
+            else scale = 1 + (scale - 5) / 200f;
+            PointF center = new PointF((float)locateInfo.center.x, (float)locateInfo.center.y);
+            paint.setStyle(Paint.Style.FILL);
+            mCanvas.drawCircle(center.x, center.y, 20, paint);
+
+            paint.setStyle(Paint.Style.STROKE);
+            PointF left_up = new PointF(center.x - 230 * scale, center.y - 150 * scale);
+            Path path = new Path();
+            path.moveTo(left_up.x, left_up.y + 70 * scale);
+            path.lineTo(left_up.x, left_up.y);
+            path.lineTo(left_up.x + 70 * scale, left_up.y);
+            mCanvas.drawPath(path, paint);
+
+            PointF right_up = new PointF(center.x + 230 * scale, center.y - 150 * scale);
+            path.moveTo(right_up.x, right_up.y + 70 * scale);
+            path.lineTo(right_up.x, right_up.y);
+            path.lineTo(right_up.x - 70 * scale, right_up.y);
+            mCanvas.drawPath(path, paint);
+
+            PointF right_bottom = new PointF(center.x + 230 * scale, center.y + 150 * scale);
+            path.moveTo(right_bottom.x, right_bottom.y - 70 * scale);
+            path.lineTo(right_bottom.x,right_bottom.y);
+            path.lineTo(right_bottom.x - 70 * scale, right_bottom.y);
+            mCanvas.drawPath(path, paint);
+
+            PointF left_bottom = new PointF(center.x - 230 * scale, center.y + 150 * scale);
+            path.moveTo(left_bottom.x, left_bottom.y - 70 * scale);
+            path.lineTo(left_bottom.x, left_bottom.y);
+            path.lineTo(left_bottom.x + 70 * scale, left_bottom.y);
+            mCanvas.drawPath(path, paint);
             //drawInfoTest();
         }
     }
@@ -274,7 +320,6 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
             rect = new RectF(center.x - b, center.y - a, center.x + b, center.y + a);
             effects = new DashPathEffect(list, -C / 4);
             paintDraw.setPathEffect(effects);
-            Log.i("ERROR", error + "");
             if (Math.abs(error) < 0.01)
                 paintDraw.setColor(Color.parseColor("#A0FF0060"));
             else
@@ -843,6 +888,152 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
             mCanvas.drawPath(mPath, paint);
         }
     }
+
+    public void drawPitch(float pitch_error) {
+        if (mCanvas != null) {
+            //test_error += 1.f;
+            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG), paint_font = new Paint(Paint.ANTI_ALIAS_FLAG);
+            paint_font.setStrokeWidth(3);
+            paint.setStrokeWidth(10);
+            /** draw center Circle
+            paint.setColor(Color.parseColor("#C0FFFF00"));
+            paint.setStyle(Paint.Style.FILL);
+            mCanvas.drawCircle(centerPoint.x, centerPoint.y, 20, paint);
+             */
+
+            /** draw background
+            paint.setColor(Color.parseColor("#C0303030"));
+            mCanvas.drawLine(0, centerPoint.y, 1080.f, centerPoint.y, paint);
+             */
+
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setColor(Color.parseColor("#C0FFFFFF"));
+            paint_font.setColor(Color.parseColor("#C0FFFFFF"));
+            paint_font.setTextSize(40);
+            mCanvas.clipRect(new Rect((int)(centerPoint.x - length[1] - 50), (int)pitch_down, (int)(centerPoint.x + length[1] + 50), (int)pitch_up));
+            float center_high = centerPoint.y + (pitch_error - (int)(pitch_error / high) * high), now_y = center_high;
+            int center_num = (int)(pitch_error / high), length_cnt = center_num & 1, now_num = center_num;
+            mCanvas.drawLine(centerPoint.x - length[length_cnt], now_y, centerPoint.x + length[length_cnt], now_y, paint);
+            mCanvas.drawText(center_num + "", centerPoint.x + length[length_cnt] + 15, now_y + 10, paint_font);
+            now_y = center_high + high;
+            length_cnt = center_num & 1;
+            now_num = center_num - 1;
+            while (now_y < pitch_up) {
+                length_cnt = length_cnt ^ 1;
+                mCanvas.drawLine(centerPoint.x - length[length_cnt], now_y, centerPoint.x + length[length_cnt], now_y, paint);
+                mCanvas.drawText(now_num + "", centerPoint.x + length[length_cnt] + 15, now_y + 10, paint_font);
+                now_num--;
+                now_y += high;
+            }
+            now_y = center_high - high;
+            length_cnt = center_num & 1;
+            now_num = center_num + 1;
+            while (now_y > pitch_down) {
+                length_cnt = length_cnt ^ 1;
+                mCanvas.drawLine(centerPoint.x - length[length_cnt], now_y, centerPoint.x + length[length_cnt], now_y, paint);
+                mCanvas.drawText(now_num + "", centerPoint.x + length[length_cnt] + 15, now_y + 10, paint_font);
+                now_num++;
+                now_y -= high;
+            }
+        }
+    }
+
+    private float angle_diff = (float)Math.PI / 18;
+    private float radiu_in = 450.f, radiu_out = 500.f;
+    private float radiu_font = 360;
+
+    public void drawRoll(float roll_error) {
+        if (mCanvas != null) {
+            test_error += 0.01f;
+            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG), paint_font = new Paint(Paint.ANTI_ALIAS_FLAG);
+            paint.setStrokeWidth(10);
+
+            /** draw center Triangle*/
+            paint.setColor(Color.parseColor("#C0FF5000"));
+            paint.setStyle(Paint.Style.FILL);
+            Path tri = new Path();
+            tri.moveTo(centerPoint.x, centerPoint.y - radiu_out - 20);
+            tri.lineTo(centerPoint.x - 25, centerPoint.y - radiu_out - 80);
+            tri.lineTo(centerPoint.x + 25, centerPoint.y - radiu_out - 80);
+            tri.close();
+            mCanvas.drawPath(tri, paint);
+
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setColor(Color.parseColor("#C0FFFFFF"));
+            paint_font.setStrokeWidth(3);
+            paint_font.setColor(Color.parseColor("#C0FFFFFF"));
+            paint_font.setTextAlign(Paint.Align.CENTER);
+            paint_font.setTextSize(50);
+
+            float center_angle = (float)Math.PI / 2 + (roll_error - (int)(roll_error / angle_diff) * angle_diff), now_angle = center_angle;
+            int center_num = (int)(roll_error / angle_diff), now_num = center_num;
+            if (now_num % 3 == 0) radiu_in = 420;
+            else radiu_in = 450;
+            PointF line_s , line_t;
+            line_s = new PointF(centerPoint.x + radiu_in * (float)Math.cos(now_angle), centerPoint.y - radiu_in * (float)Math.sin(now_angle));
+            line_t = new PointF(centerPoint.x + radiu_out * (float)Math.cos(now_angle), centerPoint.y - radiu_out * (float)Math.sin(now_angle));
+            mCanvas.drawLine(line_s.x, line_s.y , line_t.x, line_t.y, paint);
+            if (now_num % 3 == 0) {
+                mCanvas.drawText(now_num + "", centerPoint.x + radiu_font * (float) Math.cos(now_angle), centerPoint.y - radiu_font * (float) Math.sin(now_angle), paint_font);
+            }
+
+            now_angle = center_angle + angle_diff;
+            now_num = center_num - 1;
+            while (now_angle < (float)Math.PI) {
+                if (now_num % 3 == 0) radiu_in = 420;
+                else radiu_in = 450;
+                line_s = new PointF(centerPoint.x + radiu_in * (float)Math.cos(now_angle), centerPoint.y - radiu_in * (float)Math.sin(now_angle));
+                line_t = new PointF(centerPoint.x + radiu_out * (float)Math.cos(now_angle), centerPoint.y - radiu_out * (float)Math.sin(now_angle));
+                mCanvas.drawLine(line_s.x, line_s.y , line_t.x, line_t.y, paint);
+                if (now_num % 3 == 0) {
+                    mCanvas.drawText(now_num + "", centerPoint.x + radiu_font * (float) Math.cos(now_angle), centerPoint.y - radiu_font * (float) Math.sin(now_angle), paint_font);
+                }
+
+                now_angle += angle_diff;
+                now_num--;
+            }
+
+            now_angle = center_angle - angle_diff;
+            now_num = center_num + 1;
+            while (now_angle >= 0.f) {
+                if (now_num % 3 == 0) radiu_in = 420;
+                else radiu_in = 450;
+                line_s = new PointF(centerPoint.x + radiu_in * (float)Math.cos(now_angle), centerPoint.y - radiu_in * (float)Math.sin(now_angle));
+                line_t = new PointF(centerPoint.x + radiu_out * (float)Math.cos(now_angle), centerPoint.y - radiu_out * (float)Math.sin(now_angle));
+                mCanvas.drawLine(line_s.x, line_s.y , line_t.x, line_t.y, paint);
+                if (now_num % 3 == 0) {
+                    mCanvas.drawText(now_num + "", centerPoint.x + radiu_font * (float) Math.cos(now_angle), centerPoint.y - radiu_font * (float) Math.sin(now_angle), paint_font);
+                }
+
+                now_angle -= angle_diff;
+                now_num++;
+            }
+        }
+    }
+
+    public void drawHorizon(float pitch_error, float roll_error) {
+        if (mCanvas != null) {
+            float zero_pos = centerPoint.y + pitch_error;
+            float zero_angle = -roll_error;
+            float lx = 0, ly = zero_pos + centerPoint.x * (float)Math.tan(zero_angle);
+            float rx = 1080, ry = zero_pos - (rx - centerPoint.x) * (float)Math.tan(zero_angle);
+            Path path=  new Path();
+            path.moveTo(lx, ly);
+            path.lineTo(rx, ry);
+            path.lineTo(1080, 1900);
+            path.lineTo(0, 1920);
+            path.close();
+
+            Paint paint = new Paint();
+            paint.setColor(Color.parseColor("#50FFFFFF"));
+            paint.setStyle(Paint.Style.FILL);
+            mCanvas.drawPath(path, paint);
+            paint.setStrokeWidth(10);
+            paint.setColor(Color.parseColor("#A02050F0"));
+            mCanvas.drawLine(lx, ly, rx, ry, paint);
+        }
+    }
+
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         Log.d("DrawView Created", "Start");

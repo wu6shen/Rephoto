@@ -19,8 +19,8 @@ namespace reloc {
         orb_ori_ = cv::ORB::create(1000, 1.2, 8, 31, 0, 2, cv::ORB::HARRIS_SCORE, 10, 20);
         orb_com_ = cv::ORB::create(1000, 1.2, 8, 31, 0, 2, cv::ORB::HARRIS_SCORE, 10, 20);
         orb_ori_t_ = new ORBextractor(1000, 1.2, 8, 20, 7);
-        orb_com_t_ = new ORBextractor(1000, 1.2, 5, 20, 7);
-        orb_com_old_t_ = new ORBextractor(1000, 1.2, 5, 20, 7);
+        orb_com_t_ = new ORBextractor(1000, 1.2, 8, 20, 7);
+        orb_com_old_t_ = new ORBextractor(1000, 1.2, 8, 20, 7);
         rect_scale_ = 1.0 / 4;
         img_scale_ = 0;
         
@@ -45,7 +45,7 @@ namespace reloc {
         ori_frame_.setORBT(orb_ori_t_);
         ori_frame_.extractORB(ori_img_);
         //ori_frame_old_.setORBT(orb_ori_t_);
-        ori_frame_old_.extractORB(ori_img_);
+        //ori_frame_old_.extractORB(ori_img_);
         num_p_.resize(ori_frame_.kpts_kp_.size());
         ori_frame_.inlier_num_ = 1000;
         ori_frame_old_.inlier_num_ = 1000;
@@ -66,9 +66,8 @@ namespace reloc {
         cur_frame_old_ = Frame(cur_id_ - 1, orb_com_);
         if (last_frame_.inlier_ref_num_ < 50) lk_model_ = false;
 
-
         if (lk_model_ == false) lk_init_num_ = -1;
-        __android_log_print(ANDROID_LOG_INFO, "info", "cur_id: %d with Ref: %d ref num : %d lk : %d lk:num : %d", cur_id_, now_model_, top, lk_model_, lk_num_);
+        __android_log_print(ANDROID_LOG_INFO, "info", "cur_id: %d with Ref: %d ref num : %d use lk : %d lk:num : %d", cur_id_, now_model_, top, lk_model_, lk_num_);
         if (method_ == 0) {
             cur_frame_.setORBT(orb_com_t_);
             if (lk_model_) {
@@ -121,7 +120,7 @@ namespace reloc {
     
     void Track::changeModel() {
         std::cout << cur_frame_.dis2ori_ << " " << ref_frame_.dis2ori_ << " " << cur_frame_.getDis(ref_frame_) << std::endl;
-        __android_log_print(ANDROID_LOG_INFO, "info", "%f %f %f", cur_frame_.dis2ori_, ref_frame_.dis2ori_, cur_frame_.getDis(ref_frame_));
+        //__android_log_print(ANDROID_LOG_INFO, "info", "%f %f %f", cur_frame_.dis2ori_, ref_frame_.dis2ori_, cur_frame_.getDis(ref_frame_));
         // track ref
         if (now_model_ == 1) {
             //model change
@@ -134,7 +133,7 @@ namespace reloc {
                 }
             }
             if (best_id != top - 1) {
-                __android_log_print(ANDROID_LOG_INFO, "info", "best_id : %d", best_id);
+                //__android_log_print(ANDROID_LOG_INFO, "info", "best_id : %d", best_id);
                 up_num_++;
                 if (up_num_ >= 3) {
                     if (best_id == -1) {
@@ -157,7 +156,7 @@ namespace reloc {
         std::cout << "Down" << down_num_ << std::endl;
         if (down_num_ >= 5) {
             std::cout << "REFNUM: " << cur_frame_.inlier_ref_num_ << std::endl;
-            __android_log_print(ANDROID_LOG_INFO, "info", "REFNUM: %d" , cur_frame_.inlier_ref_num_);
+            //__android_log_print(ANDROID_LOG_INFO, "info", "REFNUM: %d" , cur_frame_.inlier_ref_num_);
             std::cout << cur_frame_.getError(ori_frame_) << std::endl;
             std::cout << top << std::endl;
             //need
@@ -203,7 +202,7 @@ namespace reloc {
     
     void Track::trackUseKeyPoint(cv::Mat &img) {
         cur_frame_.extractORB(img);
-        __android_log_print(ANDROID_LOG_INFO, "info", "point num : %d", cur_frame_.kpts_kp_.size());
+        //__android_log_print(ANDROID_LOG_INFO, "info", "point num : %d", cur_frame_.kpts_kp_.size());
         std::vector<cv::DMatch> matches;
         
         getMatchUseKnn(cur_frame_, ref_frame_, matches);
@@ -252,9 +251,12 @@ namespace reloc {
     }
     
     void Track::getMatchUseKnn(Frame &f1, Frame &f2, std::vector<cv::DMatch> &matches) {
+        double start = now_ms();
         cv::BFMatcher matcher(cv::NORM_HAMMING);
         std::vector<std::vector<cv::DMatch> > knnMatches;
         matcher.knnMatch(f1.desc_, f2.desc_, knnMatches, 2);
+        double stop = now_ms();
+        __android_log_print(ANDROID_LOG_INFO, "info", "KNN time:%lf", (stop - start));
         for (size_t i = 0; i < knnMatches.size(); i++) {
             const cv::DMatch &bestMatch = knnMatches[i][0];
             const cv::DMatch &betterMatch = knnMatches[i][1];
@@ -265,6 +267,8 @@ namespace reloc {
                 matches.push_back(bestMatch);
             }
         }
+        stop = now_ms();
+        __android_log_print(ANDROID_LOG_INFO, "info", "KNN time:%lf", (stop - start));
     }
     void Track::updateMatch(Frame &f1, Frame &f2, std::vector<cv::DMatch> &matches) {
         std::vector<int> rotate[30];
@@ -311,7 +315,7 @@ namespace reloc {
             }
         }
         inliers.resize(kpts1.size());
-        h = cv::findHomography(kpts1, kpts2, CV_RANSAC, 5, inliers, 500, 0.999);
+        h = cv::findHomography(kpts1, kpts2, CV_RANSAC, 5, inliers, 200, 0.999);
         
         out_num_ = 0, in_num_ = 0;
         match_ = f1;

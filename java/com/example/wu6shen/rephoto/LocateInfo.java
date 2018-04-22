@@ -50,6 +50,12 @@ public class LocateInfo {
         center.x /= scale; center.y /= scale;
     }
 
+    public void clearError() {
+        for (int i = 0; i < 6; i++) {
+            errors[i] = 0;
+        }
+    }
+
     public Point getNewPoint(Point point, double[] dataHomgraphy) {
         double dataPoint[] = {point.x, point.y, 1};
         double dataNewPoint[] = new double[3];
@@ -201,7 +207,7 @@ public class LocateInfo {
             //info[5] = 0;
             /**0*/
         }
-        if (errors[5] != 0) errors[5] = Math.sqrt(errors[5] / 200);
+        if (errors[5] != 0) errors[5] = errors[5] / Math.abs(errors[5]) * Math.sqrt(Math.abs(errors[5]) / 200);
 
         for (int i = 0; i < 6; i++) {
             int id = i;

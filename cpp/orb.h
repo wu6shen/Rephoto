@@ -29,6 +29,13 @@
 
 namespace reloc
 {
+    static double now_ms(void) {
+
+        struct timespec res;
+        clock_gettime(CLOCK_REALTIME, &res);
+        return 1000.0 * res.tv_sec + (double) res.tv_nsec / 1e6;
+
+    }
 
     class ExtractorNode
     {
@@ -84,17 +91,19 @@ namespace reloc
         }
 
         std::vector<cv::Mat> mvImagePyramid;
+        cv::Mat zeroMat;
 
     protected:
 
         void ComputePyramid(cv::Mat image);
         void ComputeDescriptorsEveryLevel(int level, std::vector<std::vector<cv::KeyPoint> > &allKeypoints, const cv::Mat & descriptors, int offset, std::vector<cv::KeyPoint> & _keypoints);
-        void ComputeKeyPointsOctTreeEveryLevel(int level, std::vector<std::vector<cv::KeyPoint> > &allKeypoints);
+        void ComputeDescriptorsZeroLevel(int level, std::vector<std::vector<cv::KeyPoint> > &allKeypoints, const cv::Mat & descriptors, int offset, std::vector<cv::KeyPoint> & _keypoints);
+
+        void ComputeKeyPointsOctTreeEveryLevel(int level, std::vector<std::vector<cv::KeyPoint> > &allKeypoints, int flag);
         void ComputeKeyPointsOctTree(std::vector<std::vector<cv::KeyPoint> >& allKeypoints);
         std::vector<cv::KeyPoint> DistributeOctTree(const std::vector<cv::KeyPoint>& vToDistributeKeys, const int &minX,
                                                     const int &maxX, const int &minY, const int &maxY, const int &nFeatures, const int &level);
 
-        void ComputeKeyPointsOld(std::vector<std::vector<cv::KeyPoint> >& allKeypoints);
         std::vector<cv::Point> pattern;
 
         int nfeatures;

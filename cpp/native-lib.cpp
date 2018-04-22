@@ -113,9 +113,6 @@ JNIEXPORT void JNICALL
 Java_com_example_wu6shen_rephoto_MainActivity_initTrack(JNIEnv *env, jobject instance, jlong src) {
 
     // TODO
-    double start = clock(), end;
-    GLuint test;
-    glGenTextures(1, &test);
 
     cv::Mat *ptrMat = (cv::Mat*) src;
 
